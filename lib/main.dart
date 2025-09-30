@@ -18,7 +18,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -49,6 +48,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     });
 
+    // optional: show in console
     print('Password typed: $password');
   }
 

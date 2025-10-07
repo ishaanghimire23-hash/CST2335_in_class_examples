@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:my_cst2322_labs/data_repository.dart';
+import 'package:my_cst2322_labs/profile_page.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
-void main() => runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -8,100 +14,98 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CST2335 Lab 2',
+      title: 'Lab 5 Login Page',
       theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.indigo,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const LoginPage(),
       debugShowCheckedModeBanner: false,
+      routes: {
+        '/': (context) => const MyHomePage(title: 'Lab 5 Login Page'),
+        '/profile': (context) => const ProfilePage(),
+      },
     );
   }
 }
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+  final String title;
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final _loginController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _MyHomePageState extends State<MyHomePage> {
+  late TextEditingController _loginController;
+  late TextEditingController _passwordController;
+  final EncryptedSharedPreferences _prefs = EncryptedSharedPreferences();
 
-  String _imageSource = 'assets/images/question_mark.png';
-  String _imageSemantics = 'A large question mark';
+  @override
+  void initState() {
+    super.initState();
+    _loginController = TextEditingController();
+    _passwordController = TextEditingController();
+  }
 
-  void _onLoginPressed() {
-    final password = _passwordController.text.trim();
+  void _onLoginPressed() async {
+    if (_passwordController.text == "abcd") {
+      DataRepository.loginName = _loginController.text;
+      await DataRepository.loadData();
 
-    setState(() {
-      if (password == 'QWERTY123') {
-        _imageSource = 'assets/images/light_bulb.png';
-        _imageSemantics = 'A glowing light bulb (correct password)';
-      } else if (password != 'ASDF') {
-        _imageSource = 'assets/images/stop_sign.png';
-        _imageSemantics = 'A red stop sign (incorrect password)';
-      } else {
-        _imageSource = 'assets/images/question_mark.png';
-        _imageSemantics = 'A large question mark (neutral)';
-      }
-    });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Welcome Back ${DataRepository.loginName}")),
+      );
 
-    // optional: show in console
-    print('Password typed: $password');
+      Navigator.pushNamed(context, "/profile");
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Incorrect password")),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _loginController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Lab 2 — Login Demo')),
+      appBar: AppBar(title: Text(widget.title)),
       body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              TextField(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
                 controller: _loginController,
                 decoration: const InputDecoration(
-                  labelText: 'Login name',
                   border: OutlineInputBorder(),
+                  labelText: "Login name",
                 ),
-                textInputAction: TextInputAction.next,
               ),
-              const SizedBox(height: 12),
-              TextField(
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
                 obscureText: true,
-                onSubmitted: (_) => _onLoginPressed(),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _onLoginPressed,
-                  child: const Text('Login'),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: "Password",
                 ),
               ),
-              const SizedBox(height: 20),
-              Center(
-                child: SizedBox(
-                  width: 300,
-                  height: 300,
-                  child: Semantics(
-                    label: _imageSemantics,
-                    child: Image.asset(_imageSource, fit: BoxFit.contain),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+            ElevatedButton(
+              onPressed: _onLoginPressed,
+              child: const Text("Login"),
+            ),
+          ],
         ),
       ),
     );

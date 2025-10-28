@@ -8,6 +8,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+
+
       debugShowCheckedModeBanner: true, // Keep "DEBUG" like your screenshot
       title: 'Flutter Demo Home Page',
       home: const FlutterDemoHomePage(),
